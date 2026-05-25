@@ -173,21 +173,31 @@
         textArea.innerHTML = "<i>Luigi is thinking...</i>";
         memory.push({ role: "user", content: msg });
 
+       // 이 구역을 찾아서 아래 내용으로 깔끔하게 교체해 주세요!
         try {
             const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
-                body: JSON.stringify({ model: "llama3-8b-8192", messages: memory, temperature: 0.7 })
+                // 1. 모델을 현재 가장 안정적인 최신 표준 모델로 변경합니다.
+                body: JSON.stringify({ model: "llama-3.1-8b-instant", messages: memory, temperature: 0.7 })
             });
 
             const data = await response.json();
+
+            // 2. [핵심] 만약 Groq이 에러(400 등)를 뱉으면, 왜 뱉었는지 진짜 이유를 콘솔에 출력하게 만듭니다.
+            if (!response.ok) {
+                console.error("🚨 Groq AI 서버 에러 상세 원인:", data);
+                throw new Error(data.error?.message || "Groq 통신 실패");
+            }
+
             const reply = data.choices[0].message.content;
 
             memory.push({ role: "assistant", content: reply });
             updateLuigi(imgHappy, reply);
 
         } catch (err) {
-            textArea.innerHTML = "*(Luigi is distracted by kitchen smoke. Check your API key or internet!)*";
+            // 에러 메시지를 화면 대사창에도 보기 쉽게 출력해 줍니다.
+            textArea.innerHTML = `*(Luigi is distracted: ${err.message})*`;
             console.error(err);
         } finally {
             lockInput(false);
