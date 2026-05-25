@@ -20,7 +20,7 @@
             align-items: flex-end;
         }
 
-        /* 루이지 캐릭터: 구글 드라이브 이미지 연동 */
+        /* 루이지 캐릭터 */
         #luigi-character { 
             position: absolute; 
             bottom: 20%; 
@@ -122,11 +122,11 @@
 <script>
     /**
      * [환경 세팅]
-     * 발급받으신 gsk_ 키를 여기에 입력하세요.
+     * Netlify 배포 시 자동으로 비밀키가 주입되는 구간입니다.
      */
     const GROQ_API_KEY = "NETLIFY_ENV_KEY"; 
 
-    // 이미지 주소 (구글 드라이브 다이렉트 링크 공식 포맷)
+    // 이미지 주소 (Postimages 직접 링크 포맷)
     const imgAngry = "https://i.postimg.cc/Y2W6cdCX/gaeppagchin-lu-iji.png";
     const imgHappy = "https://i.postimg.cc/VLM426b6/lu-iji.png";
 
@@ -173,18 +173,15 @@
         textArea.innerHTML = "<i>Luigi is thinking...</i>";
         memory.push({ role: "user", content: msg });
 
-       // 이 구역을 찾아서 아래 내용으로 깔끔하게 교체해 주세요!
         try {
             const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_API_KEY}` },
-                // 1. 모델을 현재 가장 안정적인 최신 표준 모델로 변경합니다.
                 body: JSON.stringify({ model: "llama-3.1-8b-instant", messages: memory, temperature: 0.7 })
             });
 
             const data = await response.json();
 
-            // 2. [핵심] 만약 Groq이 에러(400 등)를 뱉으면, 왜 뱉었는지 진짜 이유를 콘솔에 출력하게 만듭니다.
             if (!response.ok) {
                 console.error("🚨 Groq AI 서버 에러 상세 원인:", data);
                 throw new Error(data.error?.message || "Groq 통신 실패");
@@ -196,7 +193,6 @@
             updateLuigi(imgHappy, reply);
 
         } catch (err) {
-            // 에러 메시지를 화면 대사창에도 보기 쉽게 출력해 줍니다.
             textArea.innerHTML = `*(Luigi is distracted: ${err.message})*`;
             console.error(err);
         } finally {
@@ -209,7 +205,6 @@
     function updateLuigi(imgSrc, text) {
         luigiImg.src = imgSrc;
         textArea.innerHTML = text;
-        // 캐릭터 움직임 효과
         luigiImg.style.transform = "translateY(-10px) scale(1.02)";
         setTimeout(() => { luigiImg.style.transform = "translateY(0) scale(1)"; }, 200);
     }
